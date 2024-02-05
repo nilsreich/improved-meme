@@ -31,19 +31,46 @@ export default function Home() {
     return savedTodos ? JSON.parse(savedTodos) : [];
   });
 
-  const uniqueLists = Array.from(new Set(todos.map((todo) => todo.list)));
+  const [lists, setLists] = useState<string[]>(() => {
+    const savedTodos = localStorage.getItem("todos");
+    return savedTodos ? Array.from(new Set(JSON.parse(savedTodos).map((todo: Todos) => todo.list))) : [];
+  });
+  const editListName = (oldName: string, newName: string) => {
+    const updatedTodos = todos.map(todo =>
+      todo.list === oldName ? { ...todo, list: newName } : todo
+    );
+    setTodos(updatedTodos);
+    localStorage.setItem("todos", JSON.stringify(updatedTodos));
+
+    const updatedLists = lists.map(list =>
+      list === oldName ? newName : list
+    );
+    setLists(updatedLists);
+    setActiveList(newName);
+  };
+
   const handleSubmit = (e: FormEvent) => {
     e.preventDefault();
     if (value.trim() === "") return;
-    const addTodo = {
-      id: crypto.randomUUID(),
-      list: value,
-      title: "Sample Todo",
-      completed: false,
-    };
     setActiveList(value);
-    setOpen(false)
+    addTodo(value);
+    setValue("");
+    setOpen(false);
+
+    if (!lists.includes(value)) {
+      setLists(prevLists => [...prevLists, value]);
+    }
   };
+
+  const deleteList = (list: string) => {
+    const updatedTodos = todos.filter((todo) => todo.list !== list);
+    setTodos(updatedTodos);
+    localStorage.setItem("todos", JSON.stringify(updatedTodos));
+
+    const updatedLists = lists.filter((l) => l !== list);
+    setLists(updatedLists);
+    setActiveList(updatedLists[0]);
+  }
 
   const addTodo = (title: string) => {
     const newTodo = {
@@ -81,7 +108,7 @@ export default function Home() {
   return (
     <main className="flex grow ">
       <Sidebar>
-        {uniqueLists.map((list) => (
+        {lists.map((list) => (
           <Button
             key={list}
             variant={"ghost"}
@@ -91,7 +118,7 @@ export default function Home() {
             {list}
           </Button>
         ))}
-        <Dialog open={open}>
+        <Dialog open={open} onOpenChange={() => setOpen(true)}>
           <DialogTrigger>add list</DialogTrigger>
           <DialogContent>
             <DialogHeader>
@@ -116,6 +143,8 @@ export default function Home() {
           deleteTodo={deleteTodo}
           editTodo={editTodos}
           toggleTodo={toggleTodo}
+          editListName={editListName}
+          deleteList={deleteList}
         />
         <TodosForm addTodo={addTodo} />
       </div>

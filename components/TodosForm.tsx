@@ -1,6 +1,6 @@
 " use client";
 
-import { FormEvent, useState } from "react";
+import { FormEvent, useState, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 
@@ -11,11 +11,14 @@ type TodoFormProps = {
 export const TodosForm = ({ addTodo }: TodoFormProps) => {
   const [value, setValue] = useState("");
 
+  const inputRef = useRef<HTMLInputElement>(null);
+
   const handleSubmit = (e: FormEvent) => {
     e.preventDefault();
     if (value.trim() === "") return;
     addTodo(value);
     setValue("");
+    inputRef.current?.focus();
   };
 
   return (
@@ -28,6 +31,8 @@ export const TodosForm = ({ addTodo }: TodoFormProps) => {
         placeholder="Add a new todo"
         value={value}
         onChange={(e) => setValue(e.target.value)}
+        autoFocus
+        ref={inputRef}
       />
       <Button type="submit">Add</Button>
     </form>
