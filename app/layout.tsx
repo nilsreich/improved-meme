@@ -21,7 +21,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" suppressHydrationWarning>
-      <body className={`${inter.className} h-svh`}>
+      <body className={`${inter.className} min-h-svh flex flex-col`}>
         <Providers
           attribute="class"
           defaultTheme="system"
